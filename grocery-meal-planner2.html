@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>買菜神器</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #FAFAF8;
+    --bg-card: #FFFFFF;
+    --bg-surface: #F3F2EE;
+    --border: #E0DED6;
+    --border-strong: #C8C6BC;
+    --text: #1C1B18;
+    --text-2: #5A5850;
+    --text-3: #9A9890;
+    --accent: #2D6A4F;
+    --accent-light: #E8F5EE;
+    --accent-text: #1B4332;
+    --warn: #B45309;
+    --warn-light: #FEF3C7;
+    --warn-text: #78350F;
+    --danger: #991B1B;
+    --danger-light: #FEE2E2;
+    --danger-text: #7F1D1D;
+    --info-light: #EFF6FF;
+    --info-text: #1E40AF;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --font: 'Noto Sans TC', sans-serif;
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    max-width: 480px;
+    margin: 0 auto;
+    padding-bottom: 80px;
+  }
+
+  .top-bar {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 20px 14px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .top-bar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .app-title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+
+  .reset-btn {
+    font-family: var(--font);
+    font-size: 13px;
+    color: var(--text-2);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+
+  .section { padding: 16px 20px 0; }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 10px;
+  }
+
+  .alert-banner {
+    background: var(--warn-light);
+    border: 1px solid #FCD34D;
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+
+  .alert-banner.empty {
+    background: var(--accent-light);
+    border-color: #6EE7B7;
+  }
+
+  .alert-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--warn-text);
+    margin-bottom: 6px;
+  }
+
+  .alert-banner.empty .alert-title { color: var(--accent-text); }
+
+  .missing-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .missing-tag {
+    font-size: 12px;
+    font-weight: 500;
+    background: #FEF9C3;
+    color: var(--warn-text);
+    border: 1px solid #FCD34D;
+    border-radius: 20px;
+    padding: 3px 10px;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .main-input {
+    flex: 1;
+    font-family: var(--font);
+    font-size: 15px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    color: var(--text);
+    outline: none;
+  }
+
+  .main-input:focus { border-color: var(--accent); }
+  .main-input::placeholder { color: var(--text-3); }
+
+  .add-btn {
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 700;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 10px 16px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .ingredient-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-bottom: 4px;
+  }
+
+  .ing-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    font-weight: 500;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 10px 5px 12px;
+    color: var(--text);
+  }
+
+  .ing-chip .remove {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-3);
+    font-size: 16px;
+    line-height: 1;
+    padding: 0;
+    margin-left: 2px;
+  }
+
+  .ing-chip .remove:hover { color: var(--danger); }
+
+  .params-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+
+  .param-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+  }
+
+  .param-label {
+    font-size: 11px;
+    color: var(--text-3);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+
+  .param-stepper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .stepper-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--border-strong);
+    background: var(--bg-surface);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text);
+    font-family: var(--font);
+  }
+
+  .stepper-val {
+    font-size: 20px;
+    font-weight: 700;
+    min-width: 28px;
+    text-align: center;
+  }
+
+  .plan-btn {
+    width: 100%;
+    font-family: var(--font);
+    font-size: 15px;
+    font-weight: 700;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    padding: 15px;
+    cursor: pointer;
+    letter-spacing: 0.2px;
+    margin-top: 4px;
+  }
+
+  .plan-btn:disabled {
+    background: var(--border-strong);
+    cursor: not-allowed;
+  }
+
+  .day-block {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+
+  .day-header {
+    background: var(--bg-surface);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .day-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-2);
+  }
+
+  .meal-row {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .meal-row:last-child { border-bottom: none; }
+
+  .meal-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-3);
+    min-width: 26px;
+    padding-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .meal-dishes { flex: 1; }
+
+  .dish-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .dish-item:last-child { margin-bottom: 0; }
+
+  .dish-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .dish-tags {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .tag {
+    font-size: 11px;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-weight: 500;
+  }
+
+  .tag-meat { background: #FEE2E2; color: #991B1B; }
+  .tag-veg { background: #D1FAE5; color: #065F46; }
+  .tag-grain { background: #FEF3C7; color: #92400E; }
+
+  .dish-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .swap-btn {
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: 500;
+    background: var(--info-light);
+    color: var(--info-text);
+    border: 1px solid #BFDBFE;
+    border-radius: 5px;
+    padding: 3px 8px;
+    cursor: pointer;
+  }
+
+  .loading-overlay {
+    display: none;
+    padding: 20px;
+    text-align: center;
+    color: var(--text-2);
+    font-size: 14px;
+  }
+
+  .loading-overlay.active { display: block; }
+
+  .spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 10px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .usage-summary {
+    background: var(--bg-surface);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+
+  .usage-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-2);
+    margin-bottom: 8px;
+  }
+
+  .usage-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+
+  .usage-ing { color: var(--text); font-weight: 500; }
+
+  .usage-bar-wrap {
+    flex: 1;
+    height: 5px;
+    background: var(--border);
+    border-radius: 3px;
+    margin: 0 10px;
+    overflow: hidden;
+  }
+
+  .usage-bar {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 3px;
+    transition: width 0.4s;
+  }
+
+  .usage-bar.partial { background: var(--warn); }
+
+  .usage-pct { color: var(--text-2); min-width: 30px; text-align: right; }
+
+  .empty-state {
+    text-align: center;
+    padding: 30px 20px;
+    color: var(--text-3);
+  }
+
+  .empty-state-icon { font-size: 36px; margin-bottom: 10px; }
+  .empty-state p { font-size: 14px; line-height: 1.6; }
+
+  .footer-note {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-3);
+    padding: 12px 20px 0;
+    line-height: 1.5;
+  }
+
+  .modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 200;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .modal-backdrop.open { display: flex; }
+
+  .modal-sheet {
+    background: var(--bg-card);
+    border-radius: 20px 20px 0 0;
+    padding: 20px 20px 40px;
+    width: 100%;
+    max-width: 480px;
+  }
+
+  .modal-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .modal-sub {
+    font-size: 13px;
+    color: var(--text-2);
+    margin-bottom: 16px;
+  }
+
+  .swap-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 14px;
+    background: var(--bg-surface);
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+
+  .swap-option:hover { border-color: var(--accent); }
+
+  .swap-option-name { font-size: 14px; font-weight: 500; }
+  .swap-option-ing { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+
+  .modal-close {
+    width: 100%;
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 500;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    cursor: pointer;
+    color: var(--text-2);
+    margin-top: 4px;
+  }
+
+  .settings-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 300;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .settings-backdrop.open { display: flex; }
+  .settings-sheet {
+    background: var(--bg-card);
+    border-radius: 20px 20px 0 0;
+    padding: 0 0 40px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 88vh;
+    overflow-y: auto;
+  }
+  .settings-handle {
+    width: 36px; height: 4px;
+    background: var(--border-strong);
+    border-radius: 2px;
+    margin: 12px auto 0;
+  }
+  .settings-header {
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: flex-start; justify-content: space-between;
+  }
+  .settings-title { font-size: 15px; font-weight: 700; }
+  .settings-hint { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+  .settings-close {
+    background: none; border: none; font-size: 22px;
+    color: var(--text-3); cursor: pointer; padding: 4px; line-height: 1;
+  }
+  .settings-body { padding: 16px 20px; }
+  .settings-group { margin-bottom: 22px; }
+  .settings-group-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.7px;
+    text-transform: uppercase; color: var(--text-3); margin-bottom: 10px;
+  }
+  .settings-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+  }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-row-label { font-size: 14px; font-weight: 500; }
+  .settings-row-desc { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+  .settings-stepper { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .settings-stepper-btn {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 1px solid var(--border-strong); background: var(--bg-surface);
+    font-size: 18px; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; color: var(--text); font-family: var(--font);
+  }
+  .settings-stepper-val { font-size: 16px; font-weight: 700; min-width: 22px; text-align: center; }
+  .toggle-wrap { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 8px; }
+  .toggle-chip {
+    font-family: var(--font); font-size: 13px; font-weight: 500;
+    padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border);
+    background: var(--bg-surface); color: var(--text-2); cursor: pointer;
+  }
+  .toggle-chip.on { background: var(--accent-light); border-color: #6EE7B7; color: var(--accent-text); }
+  .settings-input {
+    width: 100%; font-family: var(--font); font-size: 14px;
+    background: var(--bg-surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 9px 12px; color: var(--text);
+    outline: none; margin-top: 6px;
+  }
+  .settings-input:focus { border-color: var(--accent); }
+  .settings-save-btn {
+    width: 100%; font-family: var(--font); font-size: 15px; font-weight: 700;
+    background: var(--accent); color: #fff; border: none;
+    border-radius: var(--radius); padding: 14px; cursor: pointer; margin-top: 8px;
+  }
+  .settings-saved-toast {
+    display: none; text-align: center; font-size: 13px;
+    color: var(--accent-text); background: var(--accent-light);
+    border-radius: var(--radius-sm); padding: 8px; margin-top: 8px;
+  }
+  .settings-saved-toast.show { display: block; }
+  .app-title { cursor: default; user-select: none; }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-bar-inner">
+    <div class="app-title" id="appTitle">買菜神器</div>
+    <button class="reset-btn" onclick="resetAll()">重新開始</button>
+  </div>
+</div>
+
+<div class="settings-backdrop" id="settingsModal">
+  <div class="settings-sheet">
+    <div class="settings-handle"></div>
+    <div class="settings-header">
+      <div>
+        <div class="settings-title">規劃設定</div>
+        <div class="settings-hint">長按標題可隨時開啟</div>
+      </div>
+      <button class="settings-close" onclick="closeSettings()">&#215;</button>
+    </div>
+    <div class="settings-body">
+      <div class="settings-group">
+        <div class="settings-group-label">用餐人數</div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">每餐幾人份</div>
+            <div class="settings-row-desc">影響 AI 估算的份量</div>
+          </div>
+          <div class="settings-stepper">
+            <button class="settings-stepper-btn" onclick="adjSetting('persons',-1)">&#8722;</button>
+            <span class="settings-stepper-val" id="sPersons">3</span>
+            <button class="settings-stepper-btn" onclick="adjSetting('persons',1)">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="settings-group">
+        <div class="settings-group-label">允許的料理方式</div>
+        <div class="toggle-wrap" id="cookMethodToggles">
+          <button class="toggle-chip on" data-method="炒">炒</button>
+          <button class="toggle-chip on" data-method="燉">燉</button>
+          <button class="toggle-chip on" data-method="蒸">蒸</button>
+          <button class="toggle-chip on" data-method="煎">煎</button>
+          <button class="toggle-chip on" data-method="烤">烤</button>
+          <button class="toggle-chip" data-method="滷">滷</button>
+          <button class="toggle-chip" data-method="湯">湯</button>
+        </div>
+      </div>
+      <div class="settings-group">
+        <div class="settings-group-label">每道菜上限</div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">食材種類上限</div>
+            <div class="settings-row-desc">不含基本調味料</div>
+          </div>
+          <div class="settings-stepper">
+            <button class="settings-stepper-btn" onclick="adjSetting('maxIng',-1)">&#8722;</button>
+            <span class="settings-stepper-val" id="sMaxIng">3</span>
+            <button class="settings-stepper-btn" onclick="adjSetting('maxIng',1)">+</button>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-label">烹飪時間上限</div>
+            <div class="settings-row-desc">分鐘，不含醃肉</div>
+          </div>
+          <div class="settings-stepper">
+            <button class="settings-stepper-btn" onclick="adjSetting('maxMin',-5)">&#8722;</button>
+            <span class="settings-stepper-val" id="sMaxMin">20</span>
+            <button class="settings-stepper-btn" onclick="adjSetting('maxMin',5)">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="settings-group">
+        <div class="settings-group-label">口味偏好</div>
+        <div class="settings-row" style="flex-direction:column; align-items:flex-start;">
+          <div class="settings-row-label">小孩友善模式</div>
+          <div class="toggle-wrap">
+            <button class="toggle-chip on" id="kidFriendlyOn" onclick="setKidFriendly(true)">開啟（不辣、清淡）</button>
+            <button class="toggle-chip" id="kidFriendlyOff" onclick="setKidFriendly(false)">關閉</button>
+          </div>
+        </div>
+        <div class="settings-row" style="flex-direction:column; align-items:flex-start; border-bottom:none;">
+          <div class="settings-row-label" style="margin-bottom:2px">食材黑名單</div>
+          <div class="settings-row-desc">不希望出現在菜單裡的食材，用頓號分隔</div>
+          <input class="settings-input" id="blacklistInput" type="text" placeholder="例：香菜、茄子">
+        </div>
+      </div>
+      <button class="settings-save-btn" onclick="saveSettings()">儲存設定</button>
+      <div class="settings-saved-toast" id="savedToast">設定已儲存，下次規劃菜單時自動套用</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-label">今天買了什麼</div>
+  <div class="input-row">
+    <input class="main-input" id="ingInput" type="text" placeholder="例：豬五花300g、高麗菜1顆"
+      onkeydown="if(event.key==='Enter')addIngredients()">
+    <button class="add-btn" onclick="addIngredients()">加入</button>
+  </div>
+  <div class="ingredient-grid" id="ingGrid"></div>
+</div>
+
+<div class="section" style="margin-top:16px">
+  <div class="section-label">下廚計畫</div>
+  <div class="params-row">
+    <div class="param-card">
+      <div class="param-label">幾天</div>
+      <div class="param-stepper">
+        <button class="stepper-btn" onclick="adjust('days',-1)">−</button>
+        <span class="stepper-val" id="daysVal">2</span>
+        <button class="stepper-btn" onclick="adjust('days',1)">+</button>
+      </div>
+    </div>
+    <div class="param-card">
+      <div class="param-label">每天幾餐</div>
+      <div class="param-stepper">
+        <button class="stepper-btn" onclick="adjust('meals',-1)">−</button>
+        <span class="stepper-val" id="mealsVal">2</span>
+        <button class="stepper-btn" onclick="adjust('meals',1)">+</button>
+      </div>
+    </div>
+  </div>
+  <button class="plan-btn" id="planBtn" onclick="generatePlan()" disabled>
+    讓 AI 規劃菜單
+  </button>
+</div>
+
+<div class="section" style="margin-top:16px" id="alertSection" style="display:none"></div>
+<div class="section" style="margin-top:16px" id="usageSection"></div>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div>AI 正在規劃最適合的菜單…</div>
+</div>
+
+<div class="section" style="margin-top:4px" id="planSection">
+  <div class="empty-state" id="emptyState">
+    <div class="empty-state-icon">🛒</div>
+    <p>加入食材、設定天數<br>讓神器幫你算出剛剛好的菜單</p>
+  </div>
+</div>
+
+<p class="footer-note" id="footerNote"></p>
+
+<div class="modal-backdrop" id="swapModal">
+  <div class="modal-sheet">
+    <div class="modal-title" id="swapModalTitle">換一道菜</div>
+    <div class="modal-sub" id="swapModalSub"></div>
+    <div id="swapOptions"></div>
+    <button class="modal-close" onclick="closeSwapModal()">取消</button>
+  </div>
+</div>
+
+<script>
+let ingredients = [];
+let days = 2;
+let meals = 2;
+let currentPlan = null;
+let swapContext = null;
+
+let cfg = {
+  persons: 3,
+  cookMethods: ['炒','燉','蒸','煎','烤'],
+  maxIng: 3,
+  maxMin: 20,
+  kidFriendly: true,
+  blacklist: ''
+};
+
+function loadSettings() {
+  try {
+    const saved = localStorage.getItem('groceryPlannerCfg');
+    if (saved) cfg = Object.assign(cfg, JSON.parse(saved));
+  } catch(e) {}
+  applySettingsToUI();
+}
+
+function applySettingsToUI() {
+  document.getElementById('sPersons').textContent = cfg.persons;
+  document.getElementById('sMaxIng').textContent = cfg.maxIng;
+  document.getElementById('sMaxMin').textContent = cfg.maxMin;
+  document.getElementById('blacklistInput').value = cfg.blacklist || '';
+  document.querySelectorAll('#cookMethodToggles .toggle-chip').forEach(btn => {
+    btn.classList.toggle('on', cfg.cookMethods.includes(btn.dataset.method));
+  });
+  document.getElementById('kidFriendlyOn').classList.toggle('on', cfg.kidFriendly);
+  document.getElementById('kidFriendlyOff').classList.toggle('on', !cfg.kidFriendly);
+}
+
+function adjSetting(key, delta) {
+  if (key === 'persons') cfg.persons = Math.max(1, Math.min(10, cfg.persons + delta));
+  if (key === 'maxIng') cfg.maxIng = Math.max(2, Math.min(6, cfg.maxIng + delta));
+  if (key === 'maxMin') cfg.maxMin = Math.max(10, Math.min(60, cfg.maxMin + delta));
+  applySettingsToUI();
+}
+
+function setKidFriendly(val) {
+  cfg.kidFriendly = val;
+  applySettingsToUI();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadSettings();
+  document.querySelectorAll('#cookMethodToggles .toggle-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const m = btn.dataset.method;
+      if (cfg.cookMethods.includes(m)) {
+        if (cfg.cookMethods.length > 1) cfg.cookMethods = cfg.cookMethods.filter(x => x !== m);
+      } else {
+        cfg.cookMethods.push(m);
+      }
+      applySettingsToUI();
+    });
+  });
+
+  let holdTimer = null;
+  const titleEl = document.getElementById('appTitle');
+  titleEl.addEventListener('touchstart', () => {
+    holdTimer = setTimeout(() => openSettings(), 600);
+  });
+  titleEl.addEventListener('touchend', () => clearTimeout(holdTimer));
+  titleEl.addEventListener('touchmove', () => clearTimeout(holdTimer));
+  titleEl.addEventListener('mousedown', () => {
+    holdTimer = setTimeout(() => openSettings(), 600);
+  });
+  titleEl.addEventListener('mouseup', () => clearTimeout(holdTimer));
+  titleEl.addEventListener('mouseleave', () => clearTimeout(holdTimer));
+});
+
+function openSettings() {
+  applySettingsToUI();
+  document.getElementById('savedToast').classList.remove('show');
+  document.getElementById('settingsModal').classList.add('open');
+}
+
+function closeSettings() {
+  document.getElementById('settingsModal').classList.remove('open');
+}
+
+function saveSettings() {
+  cfg.blacklist = document.getElementById('blacklistInput').value.trim();
+  try { localStorage.setItem('groceryPlannerCfg', JSON.stringify(cfg)); } catch(e) {}
+  const toast = document.getElementById('savedToast');
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+function buildSystemPrompt() {
+  const methods = cfg.cookMethods.join('、');
+  const kidLine = cfg.kidFriendly ? '- 口味要小孩友善：不辣、不麻、清淡為主' : '';
+  const blackLine = cfg.blacklist ? `- 絕對不能使用這些食材：${cfg.blacklist}` : '';
+  return `你是一個台灣家庭的買菜規劃助理。根據用戶提供的食材清單，規劃合適的菜單。
+
+【硬性規則，絕對遵守】
+- 只推薦家常做法：${methods}，不推薦任何需要特殊技法的菜
+- 每道菜從備料到完成不超過${cfg.maxMin}分鐘（不含醃肉時間）
+${kidLine}
+- 每道菜的食材種類不超過${cfg.maxIng}樣（可使用蔥薑蒜鹽糖醬油米酒等基本調味）
+- 同一餐最多3道菜，且一定要有至少一道蔬菜、一道肉品
+${blackLine}
+
+【常備食材，不需特別買】
+醬油、米酒、鹽、糖、白醋、蒜頭、薑、蔥、白米、麵條、雞蛋、食用油
+
+【回傳格式】
+必須回傳純JSON，不要加任何說明文字或markdown符號。格式如下：
+
+{
+  "days": [
+    {
+      "day": 1,
+      "meals": [
+        {
+          "mealIndex": 1,
+          "dishes": [
+            {
+              "name": "菜名",
+              "type": "meat|veg|grain",
+              "ingredients": ["主食材1", "主食材2"],
+              "cookMethod": "炒",
+              "minutes": 15
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "ingredientUsage": {
+    "食材名": 使用百分比數字(0-100)
+  },
+  "missingFor": ["若想多做某道菜需要補買的東西"],
+  "tips": "一句話的補充建議"
+}`;
+}
+
+function addIngredients() {
+  const input = document.getElementById('ingInput');
+  const raw = input.value.trim();
+  if (!raw) return;
+  const parts = raw.split(/[、，,]+/).map(s => s.trim()).filter(Boolean);
+  parts.forEach(p => {
+    if (p && !ingredients.includes(p)) ingredients.push(p);
+  });
+  input.value = '';
+  renderIngredients();
+  updatePlanBtn();
+}
+
+function removeIngredient(idx) {
+  ingredients.splice(idx, 1);
+  renderIngredients();
+  updatePlanBtn();
+}
+
+function renderIngredients() {
+  const grid = document.getElementById('ingGrid');
+  grid.innerHTML = ingredients.map((ing, i) =>
+    `<span class="ing-chip">${ing}<button class="remove" onclick="removeIngredient(${i})" aria-label="移除 ${ing}">×</button></span>`
+  ).join('');
+}
+
+function adjust(type, delta) {
+  if (type === 'days') {
+    days = Math.max(1, Math.min(7, days + delta));
+    document.getElementById('daysVal').textContent = days;
+  } else {
+    meals = Math.max(1, Math.min(3, meals + delta));
+    document.getElementById('mealsVal').textContent = meals;
+  }
+}
+
+function updatePlanBtn() {
+  document.getElementById('planBtn').disabled = ingredients.length === 0;
+}
+
+async function generatePlan(messages) {
+  if (ingredients.length === 0) return;
+
+  document.getElementById('loadingOverlay').classList.add('active');
+  document.getElementById('planSection').innerHTML = '';
+  document.getElementById('alertSection').innerHTML = '';
+  document.getElementById('usageSection').innerHTML = '';
+
+  const msgArray = messages || [{
+    role: 'user',
+    content: `我買的食材有：${ingredients.join('、')}。\n請幫我規劃 ${days} 天、每天 ${meals} 餐的菜單，${cfg.persons}人份。\n盡量讓食材都能用完，不要剩太多。`
+  }];
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2000,
+        system: buildSystemPrompt(),
+        messages: msgArray
+      })
+    });
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error.message);
+    const text = data.content.map(b => b.text || '').join('').replace(/```json[\s\S]*?```|```[\s\S]*?```/g, m => m.replace(/```json|```/g,'')).trim();
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('無法解析 JSON');
+    currentPlan = JSON.parse(jsonMatch[0]);
+    renderPlan(currentPlan);
+  } catch(e) {
+    document.getElementById('planSection').innerHTML =
+      `<div style="padding:16px;color:var(--danger);font-size:14px">規劃失敗，請再試一次。<br><span style="font-size:12px;color:var(--text-3)">${e.message}</span></div>`;
+  } finally {
+    document.getElementById('loadingOverlay').classList.remove('active');
+  }
+}
+
+function renderPlan(plan) {
+  renderAlert(plan);
+  renderUsage(plan);
+  const sec = document.getElementById('planSection');
+  sec.innerHTML = '<div class="section-label" style="margin-bottom:10px">AI 規劃菜單</div>';
+
+  plan.days.forEach(dayObj => {
+    const block = document.createElement('div');
+    block.className = 'day-block';
+    block.innerHTML = `<div class="day-header"><span class="day-title">第 ${dayObj.day} 天</span></div>`;
+
+    dayObj.meals.forEach(meal => {
+      const row = document.createElement('div');
+      row.className = 'meal-row';
+      const mealLabels = ['早', '午', '晚'];
+      row.innerHTML = `<div class="meal-label">${mealLabels[meal.mealIndex-1] || meal.mealIndex}</div>
+        <div class="meal-dishes">
+          ${meal.dishes.map((d, di) => `
+            <div class="dish-item">
+              <div>
+                <div class="dish-name">${d.name}</div>
+                <div style="font-size:11px;color:var(--text-3);margin-top:2px">${d.ingredients.join('、')} · ${d.minutes}分鐘</div>
+              </div>
+              <div class="dish-actions">
+                <span class="tag ${d.type === 'meat' ? 'tag-meat' : d.type === 'veg' ? 'tag-veg' : 'tag-grain'}">${d.type === 'meat' ? '肉' : d.type === 'veg' ? '蔬' : '主食'}</span>
+                <button class="swap-btn" onclick="openSwapModal(${dayObj.day}, ${meal.mealIndex}, ${di})">換菜</button>
+              </div>
+            </div>`).join('')}
+        </div>`;
+      block.appendChild(row);
+    });
+    sec.appendChild(block);
+  });
+
+  if (plan.tips) {
+    document.getElementById('footerNote').textContent = '💡 ' + plan.tips;
+  }
+}
+
+function renderAlert(plan) {
+  const sec = document.getElementById('alertSection');
+  sec.style.display = 'block';
+  const missing = plan.missingFor || [];
+  if (missing.length > 0) {
+    sec.innerHTML = `
+      <div class="section-label">採購提醒</div>
+      <div class="alert-banner">
+        <div class="alert-title">若想菜色更豐富，可考慮補買：</div>
+        <div class="missing-list">${missing.map(m => `<span class="missing-tag">${m}</span>`).join('')}</div>
+      </div>`;
+  } else {
+    sec.innerHTML = `
+      <div class="section-label">採購狀態</div>
+      <div class="alert-banner empty">
+        <div class="alert-title">食材剛剛好！不需要再補買任何東西</div>
+      </div>`;
+  }
+}
+
+function renderUsage(plan) {
+  const sec = document.getElementById('usageSection');
+  const usage = plan.ingredientUsage || {};
+  if (Object.keys(usage).length === 0) { sec.innerHTML = ''; return; }
+  sec.innerHTML = `
+    <div class="section-label">食材使用率</div>
+    <div class="usage-summary">
+      <div class="usage-title">各食材用量估計</div>
+      ${Object.entries(usage).map(([ing, pct]) => `
+        <div class="usage-row">
+          <span class="usage-ing">${ing}</span>
+          <div class="usage-bar-wrap"><div class="usage-bar ${pct < 70 ? 'partial' : ''}" style="width:${Math.round(pct)}%"></div></div>
+          <span class="usage-pct">${Math.round(pct)}%</span>
+        </div>`).join('')}
+    </div>`;
+}
+
+function openSwapModal(dayNum, mealIdx, dishIdx) {
+  swapContext = { dayNum, mealIdx, dishIdx };
+  const dayObj = currentPlan.days.find(d => d.day === dayNum);
+  const meal = dayObj.meals.find(m => m.mealIndex === mealIdx);
+  const dish = meal.dishes[dishIdx];
+  document.getElementById('swapModalTitle').textContent = `替換「${dish.name}」`;
+  document.getElementById('swapModalSub').textContent = `目前使用：${dish.ingredients.join('、')}`;
+  document.getElementById('swapOptions').innerHTML = `
+    <div class="swap-option" onclick="doSwap('same')">
+      <div><div class="swap-option-name">換一道相似的菜</div><div class="swap-option-ing">用相同食材換個做法</div></div>
+    </div>
+    <div class="swap-option" onclick="doSwap('diff')">
+      <div><div class="swap-option-name">換一道完全不同的菜</div><div class="swap-option-ing">用其他食材重新規劃</div></div>
+    </div>
+    <div class="swap-option" onclick="doSwap('simpler')">
+      <div><div class="swap-option-name">換一道更簡單的菜</div><div class="swap-option-ing">更少步驟、更快完成</div></div>
+    </div>`;
+  document.getElementById('swapModal').classList.add('open');
+}
+
+function closeSwapModal() {
+  document.getElementById('swapModal').classList.remove('open');
+  swapContext = null;
+}
+
+async function doSwap(mode) {
+  closeSwapModal();
+  if (!swapContext || !currentPlan) return;
+  const { dayNum, mealIdx, dishIdx } = swapContext;
+  const dayObj = currentPlan.days.find(d => d.day === dayNum);
+  const meal = dayObj.meals.find(m => m.mealIndex === mealIdx);
+  const dish = meal.dishes[dishIdx];
+  const modeText = mode === 'same' ? '換一道用相同食材但不同做法的菜' :
+                   mode === 'diff' ? '換一道完全不同的菜（使用其他現有食材）' : '換一道更簡單、更快完成的菜';
+  const originalMsg = `我買的食材有：${ingredients.join('、')}。\n請幫我規劃 ${days} 天、每天 ${meals} 餐的菜單，3人份。\n盡量讓食材都能用完，不要剩太多。`;
+  const swapMsg = `請將第${dayNum}天第${mealIdx}餐的「${dish.name}」替換掉。替換方式：${modeText}。其他所有菜維持不變，只改這一道。請輸出修改後的完整菜單JSON。`;
+  await generatePlan([
+    { role: 'user', content: originalMsg },
+    { role: 'assistant', content: JSON.stringify(currentPlan) },
+    { role: 'user', content: swapMsg }
+  ]);
+}
+
+function resetAll() {
+  ingredients = [];
+  days = 2;
+  meals = 2;
+  currentPlan = null;
+  renderIngredients();
+  document.getElementById('daysVal').textContent = 2;
+  document.getElementById('mealsVal').textContent = 2;
+  document.getElementById('planSection').innerHTML = '<div class="empty-state" id="emptyState"><div class="empty-state-icon">🛒</div><p>加入食材、設定天數<br>讓神器幫你算出剛剛好的菜單</p></div>';
+  document.getElementById('alertSection').innerHTML = '';
+  document.getElementById('usageSection').innerHTML = '';
+  document.getElementById('footerNote').textContent = '';
+  updatePlanBtn();
+}
+</script>
+</body>
+</html>
